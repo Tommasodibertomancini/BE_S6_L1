@@ -1,0 +1,26 @@
+﻿@model BE_S6_L1.Models.Studente
+
+<div class="card">
+    <div class="card-header">
+        <h5>Dettagli Studente</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <dl class="row">
+                    <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Nome)</dt>
+                    <dd class="col-sm-8">@Html.DisplayFor(model => model.Nome)</dd>
+
+                    <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Cognome)</dt>
+                    <dd class="col-sm-8">@Html.DisplayFor(model => model.Cognome)</dd>
+
+                    <dt class="col-sm-4">@Html.DisplayNameFor(model => model.DataDiNascita)</dt>
+                    <dd class="col-sm-8">@Html.DisplayFor(model => model.DataDiNascita)</dd>
+
+                    <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Email)</dt>
+                    <dd class="col-sm-8">@Html.DisplayFor(model => model.Email)</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>

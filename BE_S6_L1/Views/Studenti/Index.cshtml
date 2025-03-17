@@ -1,0 +1,67 @@
+﻿@model IEnumerable<BE_S6_L1.Models.Studente>
+
+@{
+    ViewData["Title"] = "Elenco Studenti";
+}
+
+<h1>Elenco Studenti</h1>
+
+<div id="studenti-container">
+    @await Html.PartialAsync("_StudentiPartial", Model)
+</div>
+
+<div id="studente-details" class="mt-4">
+    
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+           
+            function refreshStudentiList() {
+                $.ajax({
+                    url: '@Url.Action("GetStudentiPartial", "Studenti")',
+                    type: 'GET',
+                    success: function (result) {
+                        $('#studenti-container').html(result);
+                        
+                        attachStudentClickEvents();
+                    },
+                    error: function (error) {
+                        console.log('Errore nel caricamento degli studenti:', error);
+                    }
+                });
+            }
+
+            
+            function loadStudenteDetails(id) {
+                $.ajax({
+                    url: '@Url.Action("GetStudenteDetails", "Studenti")/' + id,
+                    type: 'GET',
+                    success: function (result) {
+                        $('#studente-details').html(result);
+                    },
+                    error: function (error) {
+                        console.log('Errore nel caricamento dei dettagli:', error);
+                    }
+                });
+            }
+
+            
+            function attachStudentClickEvents() {
+                $('.student-item').click(function () {
+                    var studentId = $(this).data('id');
+                    loadStudenteDetails(studentId);
+                    
+                    $('.student-item').removeClass('active');
+                    $(this).addClass('active');
+                });
+            }
+            
+            attachStudentClickEvents();
+
+            
+            setInterval(refreshStudentiList, 30000);
+        });
+    </script>
+}
