@@ -6,62 +6,244 @@
 
 <h1>Elenco Studenti</h1>
 
-<div id="studenti-container">
-    @await Html.PartialAsync("_StudentiPartial", Model)
+<p>
+    <button class="btn btn-success" id="createStudenteBtn">
+        <i class="bi bi-plus-circle"></i> Nuovo Studente
+    </button>
+</p>
+
+<div class="row">
+    <div class="col-md-5">
+        <div id="studenti-container">
+            @await Html.PartialAsync("_StudentiPartial", Model)
+        </div>
+    </div>
+    <div class="col-md-7">
+        <div id="studente-details" class="mt-4">
+            <!-- Qui verranno caricati i dettagli dello studente -->
+        </div>
+    </div>
 </div>
 
-<div id="studente-details" class="mt-4">
-    
+<!-- Modal per Create e Edit -->
+<div class="modal fade" id="studenteModal" tabindex="-1" aria-labelledby="studenteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" id="studenteModalContent">
+            <!-- Contenuto caricato dinamicamente -->
+        </div>
+    </div>
+</div>
+
+<!-- Modal di conferma eliminazione -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Conferma Eliminazione</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Sei sicuro di voler eliminare lo studente <span id="studenteToDelete"></span>?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Elimina</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
     <script>
         $(document).ready(function () {
-           
+            // Variabile per memorizzare l'ID dello studente da eliminare
+            let deleteStudentId = null;
+
+            // Modal per Create e Edit
+            let studenteModal = new bootstrap.Modal(document.getElementById('studenteModal'));
+            let deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+
+            // Funzione per ricaricare l'elenco studenti
             function refreshStudentiList() {
                 $.ajax({
                     url: '@Url.Action("GetStudentiPartial", "Studenti")',
                     type: 'GET',
                     success: function (result) {
                         $('#studenti-container').html(result);
-                        
+                        // Riassegna gli eventi ai nuovi elementi
                         attachStudentClickEvents();
                     },
                     error: function (error) {
                         console.log('Errore nel caricamento degli studenti:', error);
+                        toastr.error('Errore nel caricamento degli studenti');
                     }
                 });
             }
 
-            
+            // Funzione per caricare i dettagli di uno studente
             function loadStudenteDetails(id) {
                 $.ajax({
                     url: '@Url.Action("GetStudenteDetails", "Studenti")/' + id,
                     type: 'GET',
                     success: function (result) {
                         $('#studente-details').html(result);
+                        // Aggiungi eventi ai pulsanti di modifica ed eliminazione
+                        attachEditDeleteEvents();
                     },
                     error: function (error) {
                         console.log('Errore nel caricamento dei dettagli:', error);
+                        toastr.error('Errore nel caricamento dei dettagli');
                     }
                 });
             }
 
-            
+            // Funzione per aggiungere eventi di click agli elementi studente
             function attachStudentClickEvents() {
                 $('.student-item').click(function () {
                     var studentId = $(this).data('id');
                     loadStudenteDetails(studentId);
-                    
+                    // Aggiunge classe active all'elemento selezionato
                     $('.student-item').removeClass('active');
                     $(this).addClass('active');
                 });
             }
-            
+
+            // Funzione per aggiungere eventi ai pulsanti di modifica ed eliminazione
+            function attachEditDeleteEvents() {
+                $('.edit-student').click(function () {
+                    const studentId = $(this).data('id');
+
+                    // Carica il form di modifica
+                    $.ajax({
+                        url: '@Url.Action("Edit", "Studenti")/' + studentId,
+                        type: 'GET',
+                        success: function (result) {
+                            $('#studenteModalContent').html(result);
+                            studenteModal.show();
+                            attachEditFormSubmitEvent();
+                        },
+                        error: function (error) {
+                            console.log('Errore nel caricamento del form di modifica:', error);
+                            toastr.error('Errore nel caricamento del form di modifica');
+                        }
+                    });
+                });
+
+                $('.delete-student').click(function () {
+                    deleteStudentId = $(this).data('id');
+                    const nome = $(this).data('nome');
+                    const cognome = $(this).data('cognome');
+
+                    $('#studenteToDelete').text(nome + ' ' + cognome);
+                    deleteModal.show();
+                });
+            }
+
+            // Evento per il pulsante di creazione nuovo studente
+            $('#createStudenteBtn').click(function () {
+                $.ajax({
+                    url: '@Url.Action("Create", "Studenti")',
+                    type: 'GET',
+                    success: function (result) {
+                        $('#studenteModalContent').html(result);
+                        studenteModal.show();
+                        attachCreateFormSubmitEvent();
+                    },
+                    error: function (error) {
+                        console.log('Errore nel caricamento del form di creazione:', error);
+                        toastr.error('Errore nel caricamento del form di creazione');
+                    }
+                });
+            });
+
+            // Funzione per attaccare l'evento di submit al form di creazione
+            function attachCreateFormSubmitEvent() {
+                $('#createStudenteForm').submit(function (e) {
+                    e.preventDefault();
+
+                    $.ajax({
+                        url: $(this).attr('action'),
+                        type: $(this).attr('method'),
+                        data: $(this).serialize(),
+                        success: function (result) {
+                            if ($(result).find('.validation-summary-errors').length === 0) {
+                                $('#studenti-container').html(result);
+                                attachStudentClickEvents();
+                                studenteModal.hide();
+                                toastr.success('Studente creato con successo');
+                            } else {
+                                $('#studenteModalContent').html(result);
+                                attachCreateFormSubmitEvent();
+                            }
+                        },
+                        error: function (error) {
+                            console.log('Errore durante la creazione dello studente:', error);
+                            toastr.error('Errore durante la creazione dello studente');
+                        }
+                    });
+                });
+            }
+
+            // Funzione per attaccare l'evento di submit al form di modifica
+            function attachEditFormSubmitEvent() {
+                $('#editStudenteForm').submit(function (e) {
+                    e.preventDefault();
+
+                    $.ajax({
+                        url: $(this).attr('action'),
+                        type: $(this).attr('method'),
+                        data: $(this).serialize(),
+                        success: function (result) {
+                            if ($(result).find('.validation-summary-errors').length === 0) {
+                                $('#studente-details').html(result);
+                                attachEditDeleteEvents();
+                                studenteModal.hide();
+                                toastr.success('Studente aggiornato con successo');
+                            } else {
+                                $('#studenteModalContent').html(result);
+                                attachEditFormSubmitEvent();
+                            }
+                        },
+                        error: function (error) {
+                            console.log('Errore durante l\'aggiornamento dello studente:', error);
+                            toastr.error('Errore durante l\'aggiornamento dello studente');
+                        }
+                    });
+                });
+            }
+
+            // Evento per il pulsante di conferma eliminazione
+            $('#confirmDelete').click(function () {
+                if (deleteStudentId) {
+                    $.ajax({
+                        url: '@Url.Action("Delete", "Studenti")/' + deleteStudentId,
+                        type: 'POST',
+                        data: {
+                            __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function (result) {
+                            if (result.success) {
+                                deleteModal.hide();
+                                refreshStudentiList();
+                                $('#studente-details').html('');
+                                toastr.success('Studente eliminato con successo');
+                            } else {
+                                toastr.error(result.message || 'Errore nell\'eliminazione dello studente');
+                            }
+                        },
+                        error: function (error) {
+                            console.log('Errore durante l\'eliminazione dello studente:', error);
+                            toastr.error('Errore durante l\'eliminazione dello studente');
+                        }
+                    });
+                }
+            });
+
+            // Inizializza gli eventi
             attachStudentClickEvents();
 
-            
-            setInterval(refreshStudentiList, 30000);
+            // Aggiorna l'elenco ogni 60 secondi (opzionale)
+            setInterval(refreshStudentiList, 60000);
         });
     </script>
 }
