@@ -4,10 +4,12 @@ using BE_S6_L1.Data;
 using BE_S6_L1.Models;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace BE_S6_L1.Controllers
 {
+    [Authorize]
     public class StudentiController : Controller
     {
         private readonly ApplicationDbContext _context;
