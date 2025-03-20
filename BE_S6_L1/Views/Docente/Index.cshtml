@@ -1,0 +1,86 @@
+﻿@model IEnumerable<BE_S6_L1.Models.Studente>
+
+@{
+    ViewData["Title"] = "Area Docenti";
+}
+
+<div class="container">
+    <h1 class="my-4">@ViewData["Title"]</h1>
+    
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Pannello di Controllo Docente</h6>
+        </div>
+        <div class="card-body">
+            <p>Benvenuto nell'area riservata ai docenti. Da qui puoi gestire gli studenti e le valutazioni.</p>
+            
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card border-left-primary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                        Studenti Totali</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count()</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-users fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="card border-left-success shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        Valutazioni</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                        <a asp-action="Valutazioni" class="btn btn-sm btn-success">Gestisci</a>
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <h4 class="mt-4">Lista Studenti</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            
+                            <th>Nome</th>
+                            <th>Cognome</th>
+                            <th>Data di Nascita</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model) {
+                            <tr>
+                                <td>@item.Nome</td>
+                                <td>@item.Cognome</td>
+                                <td>@item.DataDiNascita.ToShortDateString()</td>
+                                
+                                <td>
+                                    <a asp-controller="Studenti" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">
+                                        Dettagli
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

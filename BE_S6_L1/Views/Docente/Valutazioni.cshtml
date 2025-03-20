@@ -1,0 +1,115 @@
+﻿@model IEnumerable<BE_S6_L1.Models.Studente>
+
+@{
+    ViewData["Title"] = "Gestione Valutazioni";
+}
+
+<div class="container">
+    <h1 class="my-4">@ViewData["Title"]</h1>
+
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Message"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Assegna Valutazioni</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Matricola</th>
+                            <th>Nome</th>
+                            <th>Cognome</th>
+                            <th>Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                
+                                <td>@item.Nome</td>
+                                <td>@item.Cognome</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-primary"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#votoModal"
+                                            data-id="@item.Id"
+                                            data-nome="@item.Nome @item.Cognome">
+                                        Assegna Voto
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal per l'assegnazione del voto -->
+<div class="modal fade" id="votoModal" tabindex="-1" aria-labelledby="votoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="votoModalLabel">Assegna Voto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="AssegnaVoto" method="post">
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="studenteId" />
+                    <p>Stai assegnando un voto a: <span id="studenteNome"></span></p>
+
+                    <div class="mb-3">
+                        <label for="materia" class="form-label">Materia</label>
+                        <select name="materia" id="materia" class="form-select" required>
+                            <option value="">Seleziona una materia</option>
+                            <option value="Matematica">Matematica</option>
+                            <option value="Italiano">Italiano</option>
+                            <option value="Storia">Storia</option>
+                            <option value="Geografia">Geografia</option>
+                            <option value="Inglese">Inglese</option>
+                            <option value="Scienze">Scienze</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="voto" class="form-label">Voto (1-10)</label>
+                        <input type="number" name="voto" id="voto" class="form-control"
+                               min="1" max="10" step="0.5" required />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="submit" class="btn btn-primary">Salva</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Script per il modal di assegnazione voto
+        var votoModal = document.getElementById('votoModal');
+        votoModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var id = button.getAttribute('data-id');
+            var nome = button.getAttribute('data-nome');
+
+            var modalId = votoModal.querySelector('#studenteId');
+            var modalNome = votoModal.querySelector('#studenteNome');
+
+            modalId.value = id;
+            modalNome.textContent = nome;
+        });
+    </script>
+}

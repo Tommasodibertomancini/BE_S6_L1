@@ -27,7 +27,14 @@ namespace BE_S6_L1.ViewModels
         [Display(Name = "Conferma password")]
         [Compare("Password", ErrorMessage = "La password e la password di conferma non corrispondono.")]
         public string ConfirmPassword { get; set; }
+
+        [Display(Name = "Ruolo")]
+        public string Ruolo { get; set; }
+
+        // Proprietà per mostrare i ruoli disponibili nella view
+        public List<string> RoliDisponibili { get; set; }
     }
+
 
     public class LoginViewModel
     {

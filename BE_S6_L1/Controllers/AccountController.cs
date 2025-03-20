@@ -1,12 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using BE_S6_L1.Models;
 using BE_S6_L1.ViewModels;
 using System.Threading.Tasks;
-using BE_S6_L1.Models;
+
 
 namespace BE_S6_L1.Controllers
 {
@@ -15,22 +13,30 @@ namespace BE_S6_L1.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ILogger<AccountController> _logger;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
-            ILogger<AccountController> logger)
+            ILogger<AccountController> logger,
+            RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
+            _roleManager = roleManager;
         }
 
+        // Aggiungi questo metodo per visualizzare i ruoli disponibili nella vista
         [HttpGet]
         [AllowAnonymous]
-        public IActionResult Register()
+        public async Task<IActionResult> Register()
         {
-            return View();
+            var viewModel = new RegisterViewModel
+            {
+                RoliDisponibili = new List<string> { "Studente", "Docente" }
+            };
+            return View(viewModel);
         }
 
         [HttpPost]
@@ -54,18 +60,44 @@ namespace BE_S6_L1.Controllers
                 {
                     _logger.LogInformation("Utente creato con successo.");
 
-                    // Accedi automaticamente l'utente dopo la registrazione
+
+                    string ruolo = model.Ruolo ?? "Studente";
+
+                    _logger.LogInformation($"Tentativo di assegnare il ruolo {ruolo} all'utente {user.Email}");
+
+                    if (await _roleManager.RoleExistsAsync(ruolo))
+                    {
+                        var roleResult = await _userManager.AddToRoleAsync(user, ruolo);
+                        if (roleResult.Succeeded)
+                        {
+                            _logger.LogInformation($"Assegnato ruolo {ruolo} all'utente {user.Email}");
+                        }
+                        else
+                        {
+                            _logger.LogError($"Errore durante l'assegnazione del ruolo: {string.Join(", ", roleResult.Errors.Select(e => e.Description))}");
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"Il ruolo {ruolo} non esiste nel database");
+                    }
+
+
                     await _signInManager.SignInAsync(user, isPersistent: false);
                     return RedirectToAction("Index", "Studenti");
                 }
-
-                foreach (var error in result.Errors)
+                else
                 {
-                    ModelState.AddModelError(string.Empty, error.Description);
+                    foreach (var error in result.Errors)
+                    {
+                        _logger.LogError($"Errore durante la creazione dell'utente: {error.Description}");
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
                 }
             }
 
-            // Se arriviamo qui, qualcosa è andato storto
+            
+            model.RoliDisponibili = new List<string> { "Studente", "Docente" };
             return View(model);
         }
 
@@ -106,7 +138,7 @@ namespace BE_S6_L1.Controllers
                 }
             }
 
-            // Se arriviamo qui, qualcosa è andato storto
+            
             return View(model);
         }
 

@@ -1,4 +1,5 @@
 using BE_S6_L1.Data;
+using BE_S6_L1.Helpers;
 using BE_S6_L1.Models;
 using BE_S6_L1.Services;
 using Microsoft.AspNetCore.Identity;
@@ -74,8 +75,8 @@ try
             // Assicura che il database esista
             context.Database.Migrate();
 
-            // Inizializza i ruoli e gli utenti admin se necessario
-            // InitializeRolesAndUsers(userManager, roleManager).Wait();
+            // Inizializza i ruoli e gli utenti admin
+            await DbInitializer.InitializeRolesAndUsers(userManager, roleManager);
         }
         catch (Exception ex)
         {

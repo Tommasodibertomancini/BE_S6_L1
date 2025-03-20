@@ -34,6 +34,18 @@
                     </div>
 
                     <div class="mb-3">
+                        <label asp-for="Ruolo" class="form-label"></label>
+                        <select asp-for="Ruolo" class="form-select">
+                            <option value="">Seleziona un ruolo</option>
+                            @foreach (var ruolo in Model.RoliDisponibili)
+                            {
+                                <option value="@ruolo">@ruolo</option>
+                            }
+                        </select>
+                        <span asp-validation-for="Ruolo" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
                         <label asp-for="Password" class="form-label"></label>
                         <input asp-for="Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
                         <span asp-validation-for="Password" class="text-danger"></span>

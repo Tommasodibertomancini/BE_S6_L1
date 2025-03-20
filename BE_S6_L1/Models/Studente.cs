@@ -22,5 +22,7 @@ namespace BE_S6_L1.Models
         [Required(ErrorMessage = "L'email è obbligatoria")]
         [EmailAddress(ErrorMessage = "Formato email non valido")]
         public string Email { get; set; }
+
+        public virtual ICollection<Valutazione> Valutazioni { get; set; }
     }
 }
